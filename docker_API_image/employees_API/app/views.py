@@ -72,7 +72,7 @@ def main_index():
 
 
 @app.route('/read')
-def main_index():
+def read_employees():
     """
     Read all employees from database
     """
