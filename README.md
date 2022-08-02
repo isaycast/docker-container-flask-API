@@ -26,4 +26,4 @@ It is recommended to use POSTMAN or a similar service to be able to make the req
 
 
 # Database E-R diagram
-![Diagrama en blanco](https://user-images.githubusercontent.com/7892358/182241920-ed0f2d30-8e0d-40c5-bb9b-f2a6f8c73efa.png)
+![Diagrama en blanco (1)](https://user-images.githubusercontent.com/7892358/182441975-eb238b48-919e-42e5-bf4f-bb0d6f9ae825.png)
