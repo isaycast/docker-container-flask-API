@@ -8,7 +8,7 @@ class Employees_companies(db.Model):
     employees_id = db.Column(db.Integer, db.ForeignKey("employees.id"))
     company_id = db.Column(db.Integer, db.ForeignKey("companies.id"))
     companies = db.relationship(
-        "Companies", backref="employees", lazy="select", uselist=False, cascade="delete"
+        "Companies", backref="employees", lazy="select", uselist=False
     )
 
 class Employees_companiesSchema(ma.Schema):
