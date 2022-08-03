@@ -1,4 +1,6 @@
 from app import app
+from flask import  request
+from .ValidationAddress import ValidationAddress
 from .extensions import db
 from .models.Contacts import Contacts
 from .models.Employees import Employees, EmployeesSchema
@@ -12,52 +14,86 @@ from .models.Employees_companies import Employees_companies
 from .models.Departaments import Departaments
 
 
+validationAddress = ValidationAddress(db)
 employee_schema = EmployeesSchema()
 employees_schema = EmployeesSchema(many=True)
 
 
+ 
 
-def createTables():
-    db.create_all()
+def create_employee(first_name, last_name, phone1, phone2, email, streetAddress, zip_code, city, state, company, departaments):
+    """
+    Record a new employee in database
 
-def add_data(first_name, second_name, phone1, phone2, email, streetAddress, zip_code, city, state, company, departament):
-    employ = Employees(first_name, second_name)
+    Keyword arguments:
+    first_name -- the first name of employee
+    last_name -- the last_name name of employee
+    phone1 -- primary phone
+    phone2 -- secondary phone
+    email -- email of employee
+    streetAddress -- Street name where employee have they address
+    zip_code -- Zip code address
+    city -- Name of the city where employee lives
+    state -- Name of the state where employee lives
+    company -- Name of the company where employee belons
+    departaments -- Array of departaments where empleeye belongs
+
+    """
+    # Creating objects
+    employee = Employees(first_name, last_name)
     contact = Contacts(phone1, phone2, email)
     address = Addresses(zip_code, streetAddress)
-    city = Cities(city)
-    state = States(state)
-    company = Companies(company)
-    
-    
-
-
-
     state_addresses = States_addresses()
     city_addresses = Cities_addresses()
     employee_company = Employees_companies()
-  
+    
+    if validationAddress.it_empy():
+        validationAddress.get_dictionaries()
 
-    employ.contact = contact
-    employee_company.companies = company
-    employ.employees_companies = employee_company
+    # If not is register in db the object is registered and append to list of object registered in db
 
-    state_addresses.states = state
+    if city not in validationAddress.cities_dic.keys():
+        city_obj = Cities(city)
+        db.session.add(city_obj)
+        validationAddress.cities_dic[city] = city_obj
+    
+    if state not in validationAddress.states_dic.keys():
+        state_obj = States(state)
+        db.session.add(state_obj)
+        validationAddress.states_dic[state] = state_obj
+
+    if company not in validationAddress.companies_dic.keys():
+        company_obj = Companies(company)
+        db.session.add(company_obj)
+        validationAddress.companies_dic[company] = company_obj
+
+    for departament in departaments:
+
+        if departament not in  validationAddress.departament_dic.keys():
+            depto_obj = Departaments(departament)
+            db.session.add(depto_obj)
+            validationAddress.departament_dic[departament] = depto_obj
+        employee.departaments.append(validationAddress.departament_dic[departament])
+
+    
+    # Creating relations between objects
+    employee.contact = contact
+    employee_company.companies = validationAddress.companies_dic[company]
+    employee.employees_companies = employee_company
+
+    state_addresses.states = validationAddress.states_dic[state]
     address.states_addresses = state_addresses
     
-    city_addresses.cities = city
+    city_addresses.cities = validationAddress.cities_dic[city]
     address.cities_addresses = city_addresses
-    employ.address = address
+    employee.address = address
     
-
-    db.session.add(employ)
+    # Adding object to db 
+    db.session.add(employee)
     db.session.add(contact)
     db.session.add(address)
-    
-    db.session.add(city)
     db.session.add(city_addresses)
-    db.session.add(state)
     db.session.add(state_addresses)
-    db.session.add(company)
     db.session.add(employee_company)
 
     db.session.commit()
@@ -79,6 +115,42 @@ def read_employees():
     employees = db.session.query(Employees).all()
     
     return {"employees":employees_schema.dump(employees)}
+
+@app.route('/read/<name>')
+def employees_by_name(name):
+    """
+    Read employees by first name
+
+    Keyword arguments:
+    name -- the first name of employee
+
+    return -- list of employees that match with firstname
+    """
+    
+    employees = db.session.query(Employees).filter_by(firstname = name)
+    
+    return {"employees":employees_schema.dump(employees)}
+
+@app.route('/create', methods=["POST"])
+def create_new_employee():
+        data = request.get_json(force=True)
+        first_name = data.get('first_name','')
+        last_name = data.get('last_name','')
+        phone1 = data.get('phone1','')
+        phone2 = data.get('phone2','')
+        email = data.get('email','')
+        streetAddress = data.get('streetAddress','')
+        zip_code = data.get('zip_code','')
+        city = data.get('city','')
+        state = data.get('state','')
+        company = data.get('company','')
+        departaments = data.get('departaments',[])
+        
+        create_employee(first_name, last_name, phone1, phone2, email, streetAddress, zip_code, city, state, company, departaments)
+        
+        return {"msg": "Created Succesfuly" }
+     
+
 
 @app.route('/delete/<int:id>', methods=["DELETE"])
 def delete_employee(id):

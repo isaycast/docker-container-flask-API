@@ -4,9 +4,9 @@ from app import app as app
 
 class Contacts(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    firstphonne = db.Column(db.String(), unique = True)
-    secondaryphone = db.Column(db.String(), unique=True)
-    email = db.Column(db.String(100), unique=True)
+    firstphonne = db.Column(db.String())
+    secondaryphone = db.Column(db.String())
+    email = db.Column(db.String(100))
     employees_id = db.Column(db.Integer, db.ForeignKey("employees.id"))
 
     def __init__ (self, firstphonne, secondaryphone, email):
