@@ -29,7 +29,7 @@ class Employees(db.Model):
         "Employees_companies", backref="employees", lazy="select", uselist=False, cascade="all, delete"
     )
     departaments = db.relationship(
-        "Departaments", backref="employees", lazy="select", secondary = employees_departaments, cascade="all, delete"
+        "Departaments", backref="employees", lazy="select", secondary = employees_departaments
     )
 
     
